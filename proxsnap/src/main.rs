@@ -3,6 +3,7 @@ mod client;
 mod models;
 mod api;
 mod helper;
+mod cli;
 
 use anyhow::Result;
 use config::ProxmoxConfig;
@@ -10,9 +11,12 @@ use api::{nodes, qemu, lxc};
 use std::collections::HashMap;
 use models::{Inventory, GuestSnapshots, GuestKind};
 use helper::report_inventory;
+use clap::Parser;
+use cli::Cli;
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    let cli = Cli::parse();
     // let cfg = ProxmoxConfig::from_env();
     let cfg = ProxmoxConfig {
         base_url: "https://10.10.10.11:8006".into(),
@@ -61,46 +65,9 @@ async fn main() -> Result<()> {
         inventory.insert(node.node.clone(), guests);
     }
 
-    // for node in nodes {
-    //     println!("Node: {}", node.node);
-
-    //     for vm in qemu::list_vms(&client, &cfg.base_url, &node.node).await? {
-    //         let snaps = qemu::list_snapshots(
-    //             &client,
-    //             &cfg.base_url,
-    //             &node.node,
-    //             vm.vmid,
-    //         )
-    //         .await?;
-
-    //         report("VM", vm.vmid, &vm.name, snaps.len());
-    //     }
-
-    //     for ct in lxc::list_containers(&client, &cfg.base_url, &node.node).await? {
-    //         let snaps = lxc::list_snapshots(
-    //             &client,
-    //             &cfg.base_url,
-    //             &node.node,
-    //             ct.vmid,
-    //         )
-    //         .await?;
-
-    //         report("CT", ct.vmid, &ct.name, snaps.len());
-    //     }
-    // }
-
+    if cli.list {
     report_inventory(&inventory);
+    }
 
     Ok(())
-}
-
-fn report(kind: &str, vmid: u64, name: &Option<String>, count: usize) {
-    let name = name.as_deref().unwrap_or("<unnamed>");
-    let real = count.saturating_sub(1);
-
-    if real > 0 {
-        println!("  ⚠ {} {} ({}) has {} snapshots", kind, vmid, name, real);
-    } else {
-        println!("  ✓ {} {} ({}) has no snapshots", kind, vmid, name);
-    }
 }
