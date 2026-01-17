@@ -2,10 +2,14 @@ mod config;
 mod client;
 mod models;
 mod api;
+mod helper;
 
 use anyhow::Result;
 use config::ProxmoxConfig;
 use api::{nodes, qemu, lxc};
+use std::collections::HashMap;
+use models::{Inventory, GuestSnapshots, GuestKind};
+use helper::report_inventory;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -16,11 +20,11 @@ async fn main() -> Result<()> {
         insecure_tls: true,
     };
     let client = client::create_client(&cfg)?;
-
     let nodes = nodes::list_nodes(&client, &cfg.base_url).await?;
+    let mut inventory: Inventory = HashMap::new();
 
     for node in nodes {
-        println!("Node: {}", node.node);
+        let mut guests = Vec::new();
 
         for vm in qemu::list_vms(&client, &cfg.base_url, &node.node).await? {
             let snaps = qemu::list_snapshots(
@@ -28,10 +32,14 @@ async fn main() -> Result<()> {
                 &cfg.base_url,
                 &node.node,
                 vm.vmid,
-            )
-            .await?;
+            ).await?;
 
-            report("VM", vm.vmid, &vm.name, snaps.len());
+            guests.push(GuestSnapshots {
+                kind: GuestKind::Qemu,
+                vmid: vm.vmid,
+                name: vm.name,
+                snapshots: snaps,
+            });
         }
 
         for ct in lxc::list_containers(&client, &cfg.base_url, &node.node).await? {
@@ -40,12 +48,48 @@ async fn main() -> Result<()> {
                 &cfg.base_url,
                 &node.node,
                 ct.vmid,
-            )
-            .await?;
+            ).await?;
 
-            report("CT", ct.vmid, &ct.name, snaps.len());
+            guests.push(GuestSnapshots {
+                kind: GuestKind::Lxc,
+                vmid: ct.vmid,
+                name: ct.name,
+                snapshots: snaps,
+            });
         }
+
+        inventory.insert(node.node.clone(), guests);
     }
+
+    // for node in nodes {
+    //     println!("Node: {}", node.node);
+
+    //     for vm in qemu::list_vms(&client, &cfg.base_url, &node.node).await? {
+    //         let snaps = qemu::list_snapshots(
+    //             &client,
+    //             &cfg.base_url,
+    //             &node.node,
+    //             vm.vmid,
+    //         )
+    //         .await?;
+
+    //         report("VM", vm.vmid, &vm.name, snaps.len());
+    //     }
+
+    //     for ct in lxc::list_containers(&client, &cfg.base_url, &node.node).await? {
+    //         let snaps = lxc::list_snapshots(
+    //             &client,
+    //             &cfg.base_url,
+    //             &node.node,
+    //             ct.vmid,
+    //         )
+    //         .await?;
+
+    //         report("CT", ct.vmid, &ct.name, snaps.len());
+    //     }
+    // }
+
+    report_inventory(&inventory);
 
     Ok(())
 }
