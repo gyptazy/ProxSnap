@@ -30,7 +30,7 @@ jobs:
 
       - name: Build static binary (musl)
         run: |
-          cd ProxSnap && cargo build --release --target x86_64-unknown-linux-musl
+          cd proxsnap && cargo build --release --target x86_64-unknown-linux-musl
 
       - name: Extract version from Cargo.toml
         id: version
