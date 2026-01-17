@@ -1,5 +1,5 @@
 use crate::models::{Inventory, GuestKind};
-use chrono::{DateTime, Local, TimeZone};
+use chrono::{DateTime, Local, TimeZone, NaiveDate};
 use chrono_humanize::HumanTime;
 
 pub fn report_inventory(inv: &Inventory) {
@@ -52,4 +52,9 @@ fn format_snapshot_time(ts: Option<i64>) -> String {
         }
         None => "n/a".into(),
     }
+}
+
+pub fn parse_date(s: &str) -> Result<NaiveDate, String> {
+    NaiveDate::parse_from_str(s, "%Y-%m-%d")
+        .map_err(|_| "expected format: YYYY-MM-DD".to_string())
 }

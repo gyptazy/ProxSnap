@@ -69,5 +69,9 @@ async fn main() -> Result<()> {
     report_inventory(&inventory);
     }
 
+    if let Some(date) = cli.delete_before {
+        println!("Deleting snapshots before: {}", date);
+    }
+
     Ok(())
 }
