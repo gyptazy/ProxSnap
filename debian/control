@@ -1,0 +1,13 @@
+Source: proxsnap
+Maintainer: Florian Paul Azim Hoberg <gyptazy@gyptazy.com>
+Section: admin
+Priority: optional
+Standards-Version: 4.6.2
+Build-Depends: debhelper-compat (= 13), rustc, cargo
+Rules-Requires-Root: no
+
+Package: proxsnap
+Architecture: amd64
+Depends: ${misc:Depends}
+Description: A Snapshot manager utility for Proxmox VE clusters
+ ProxSnap is a Rust based tool for Proxmox VE clusters that provides a complete overview of VM and container snapshots, including snapshot names and dates.
