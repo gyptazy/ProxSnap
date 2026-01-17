@@ -4,6 +4,7 @@ mod models;
 mod api;
 mod helper;
 mod cli;
+mod config_file;
 
 use anyhow::Result;
 use config::ProxmoxConfig;
@@ -13,17 +14,14 @@ use models::{Inventory, GuestSnapshots, GuestKind};
 use helper::report_inventory;
 use clap::Parser;
 use cli::Cli;
+use config_file::FileConfig;
 
 #[tokio::main]
 async fn main() -> Result<()> {
     let cli = Cli::parse();
-
-    // let cfg = ProxmoxConfig::from_env();
-    let cfg = ProxmoxConfig {
-        base_url: "https://10.10.10.11:8006".into(),
-        api_token: "PVEAPIToken=root@pam!test=ac1079bb-366f-46ab-9658-8a3262da6077".into(),
-        insecure_tls: true,
-    };
+    let config_path = cli.config.as_deref().unwrap_or("/etc/proxsnap/proxsnap.yaml");
+    let file_cfg = FileConfig::load(config_path)?;
+    let cfg = ProxmoxConfig::from_file(file_cfg);
     let client = client::create_client(&cfg)?;
     let nodes = nodes::list_nodes(&client, &cfg.base_url).await?;
     let mut inventory: Inventory = HashMap::new();
@@ -65,11 +63,6 @@ async fn main() -> Result<()> {
 
         inventory.insert(node.node.clone(), guests);
     }
-
-    // if let Some(cutoff) = cli.date {
-    //     helper::report_snapshots_older_than(&inventory, cutoff);
-    //     return Ok(());
-    // }
 
     if let Some(cutoff) = cli.date {
         helper::report_snapshots_older_than(&inventory, cutoff, cli.remove, &client, &cfg.base_url).await?;

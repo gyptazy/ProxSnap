@@ -9,6 +9,10 @@ use chrono::NaiveDate;
     about = "Snapshot management tool for Proxmox clusters.\nAuthor: Florian Paul Azim Hoberg @gyptazy <contact@gyptazy.com>"
 )]
 pub struct Cli {
+
+    #[arg(short = 'c', long, help = "Path to ProxSnap config file (default: /etc/proxsnap/proxsnap.yaml)", value_name = "FILE")]
+    pub config: Option<String>,
+
     #[arg(short = 'l', long, help = "List snapshots for all VMs & CTs")]
     pub list: bool,
 

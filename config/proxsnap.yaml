@@ -1,0 +1,7 @@
+proxmox_api:
+  hosts: 10.10.10.11
+  user: root@pam
+  token_id: test
+  token_secret: ac1079bb-366f-46ab-9658-8a3262da6077
+  ssl_verification: False
+  timeout: 10
