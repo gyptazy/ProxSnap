@@ -1,3 +1,4 @@
+use std::time::Duration;
 use reqwest::{Client, header};
 use anyhow::Result;
 use crate::config::ProxmoxConfig;
@@ -11,6 +12,7 @@ pub fn create_client(cfg: &ProxmoxConfig) -> Result<Client> {
 
     let client = Client::builder()
         .default_headers(headers)
+        .timeout(Duration::from_secs(10))
         .danger_accept_invalid_certs(cfg.insecure_tls)
         .build()?;
 
