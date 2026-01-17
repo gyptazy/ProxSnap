@@ -1,1 +1,1 @@
-ProxSnap/target/x86_64-unknown-linux-musl/release/proxsnap usr/bin/
+proxsnap/target/x86_64-unknown-linux-musl/release/proxsnap usr/bin/
