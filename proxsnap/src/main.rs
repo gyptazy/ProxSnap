@@ -17,6 +17,7 @@ use cli::Cli;
 #[tokio::main]
 async fn main() -> Result<()> {
     let cli = Cli::parse();
+
     // let cfg = ProxmoxConfig::from_env();
     let cfg = ProxmoxConfig {
         base_url: "https://10.10.10.11:8006".into(),

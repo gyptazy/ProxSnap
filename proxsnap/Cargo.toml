@@ -1,5 +1,5 @@
 [package]
-name = "proxmox-snapshot-check"
+name = "proxsnap"
 version = "0.1.0"
 edition = "2021"
 

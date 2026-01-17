@@ -4,14 +4,14 @@ use chrono::NaiveDate;
 
 #[derive(Parser, Debug)]
 #[command(
-    name = "pve-snapshots",
+    name = "ProxSnap",
     version,
-    about = "List and inspect Proxmox snapshots"
+    about = "Snapshot management tool for Proxmox clusters.\nAuthor: Florian Paul Azim Hoberg @gyptazy <contact@gyptazy.com>"
 )]
 pub struct Cli {
-    #[arg(long)]
+    #[arg(short = 'l', long, help = "List snapshots for all VMs & CTs")]
     pub list: bool,
 
-    #[arg(long, value_parser = parse_date)]
+    #[arg(short = 'd', long, help = "Delete all snapshots before a given date (YYYY-MM-DD)", value_parser = parse_date)]
     pub delete_before: Option<NaiveDate>,
 }
