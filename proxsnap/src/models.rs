@@ -20,6 +20,7 @@ pub struct Guest {
 #[derive(Debug, Deserialize)]
 pub struct Snapshot {
     pub name: String,
+    pub snaptime: Option<i64>,
 }
 
 #[derive(Debug)]
