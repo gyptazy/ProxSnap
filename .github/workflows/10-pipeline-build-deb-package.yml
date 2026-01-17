@@ -15,7 +15,11 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y musl-tools pkg-config libssl-dev
+          sudo apt-get install -y \
+            pkg-config \
+            libssl-dev \
+            build-essential \
+            debhelper-compat
 
       - name: Install Rust (rustup)
         uses: actions-rs/toolchain@v1
@@ -24,31 +28,23 @@ jobs:
           override: true
           components: rustfmt
 
-      - name: Add musl target
+      - name: Build release binary (glibc)
         run: |
-          rustup target add x86_64-unknown-linux-musl
-
-      - name: Build static binary (musl)
-        run: |
-          cd proxsnap && cargo build --release --target x86_64-unknown-linux-musl
+          cd proxsnap
+          cargo build --release
 
       - name: Extract version from Cargo.toml
         id: version
         run: |
-          VERSION=$(grep '^version' Cargo.toml | head -n1 | cut -d '"' -f2)
+          VERSION=$(grep '^version' proxsnap/Cargo.toml | head -n1 | cut -d '"' -f2)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Build Debian package
         run: |
-          PKG=proxsnap
-          VERSION=${{ steps.version.outputs.version }}
-          ARCH=amd64
-          sudo apt-get update &&\
-          sudo apt-get -y install build-essential debhelper-compat rustc cargo &&\
-          dpkg-buildpackage &&\
-          mkdir package &&\
-          mv ../*.deb package/ &&\
-          echo 'OK: Debian package successfully created.'
+          dpkg-buildpackage -us -uc
+          mkdir -p package
+          mv ../*.deb package/
+          echo "OK: Debian package successfully created."
 
       - name: Upload Debian package artifact
         uses: actions/upload-artifact@v4
