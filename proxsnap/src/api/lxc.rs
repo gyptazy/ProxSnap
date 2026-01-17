@@ -29,3 +29,24 @@ pub async fn list_snapshots(
 
     Ok(resp.data)
 }
+
+pub async fn delete_snapshot(
+    client: &Client,
+    base_url: &str,
+    node: &str,
+    vmid: u64,
+    snapshot: &str,
+) -> Result<()> {
+    let url = format!(
+        "{}/api2/json/nodes/{}/lxc/{}/snapshot/{}",
+        base_url, node, vmid, snapshot
+    );
+
+    client
+        .delete(&url)
+        .send()
+        .await?
+        .error_for_status()?;
+
+    Ok(())
+}

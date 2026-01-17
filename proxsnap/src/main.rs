@@ -66,10 +66,16 @@ async fn main() -> Result<()> {
         inventory.insert(node.node.clone(), guests);
     }
 
+    // if let Some(cutoff) = cli.date {
+    //     helper::report_snapshots_older_than(&inventory, cutoff);
+    //     return Ok(());
+    // }
+
     if let Some(cutoff) = cli.date {
-        helper::report_snapshots_older_than(&inventory, cutoff);
+        helper::report_snapshots_older_than(&inventory, cutoff, cli.remove, &client, &cfg.base_url).await?;
         return Ok(());
     }
+
 
     if cli.list {
     report_inventory(&inventory);
