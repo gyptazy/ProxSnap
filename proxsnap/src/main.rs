@@ -66,12 +66,14 @@ async fn main() -> Result<()> {
         inventory.insert(node.node.clone(), guests);
     }
 
-    if cli.list {
-    report_inventory(&inventory);
+    if let Some(cutoff) = cli.date {
+        helper::report_snapshots_older_than(&inventory, cutoff);
+        return Ok(());
     }
 
-    if let Some(date) = cli.delete_before {
-        println!("Deleting snapshots before: {}", date);
+    if cli.list {
+    report_inventory(&inventory);
+    return Ok(());
     }
 
     Ok(())

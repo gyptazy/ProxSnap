@@ -1,5 +1,5 @@
 use crate::models::{Inventory, GuestKind};
-use chrono::{DateTime, Local, TimeZone, NaiveDate};
+use chrono::{DateTime, Local, TimeZone, NaiveDate, NaiveDateTime};
 use chrono_humanize::HumanTime;
 
 pub fn report_inventory(inv: &Inventory) {
@@ -32,7 +32,6 @@ pub fn report_inventory(inv: &Inventory) {
             );
 
             for snap in real_snaps {
-                // let when = human_time(snap.snaptime);
                 let when = format_snapshot_time(snap.snaptime);
                 println!("      • {} ({})", snap.name, when);
             }
@@ -57,4 +56,53 @@ fn format_snapshot_time(ts: Option<i64>) -> String {
 pub fn parse_date(s: &str) -> Result<NaiveDate, String> {
     NaiveDate::parse_from_str(s, "%Y-%m-%d")
         .map_err(|_| "expected format: YYYY-MM-DD".to_string())
+}
+
+pub fn report_snapshots_older_than(
+    inv: &Inventory,
+    cutoff: NaiveDate,
+) {
+    println!(
+        "Checking for snapshots older than {}",
+        cutoff.format("%Y-%m-%d")
+    );
+
+    for (node, guests) in inv {
+        for g in guests {
+            let kind = match g.kind {
+                GuestKind::Qemu => "VM",
+                GuestKind::Lxc => "CT",
+            };
+
+            for snap in &g.snapshots {
+                if snap.name == "current" {
+                    continue;
+                }
+
+                let ts = match snap.snaptime {
+                    Some(ts) => ts,
+                    None => continue,
+                };
+
+                let snap_date = match NaiveDateTime::from_timestamp_opt(ts, 0) {
+                    Some(dt) => dt.date(),
+                    None => continue,
+                };
+
+                if snap_date < cutoff {
+                    let name = g.name.as_deref().unwrap_or("<unnamed>");
+
+                    println!(
+                        "⚠ {} {} ({}) snapshot '{}' is older than cutoff ({} < {})",
+                        kind,
+                        g.vmid,
+                        name,
+                        snap.name,
+                        snap_date.format("%Y-%m-%d"),
+                        cutoff.format("%Y-%m-%d")
+                    );
+                }
+            }
+        }
+    }
 }

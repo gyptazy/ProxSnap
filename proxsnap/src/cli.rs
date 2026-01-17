@@ -12,6 +12,10 @@ pub struct Cli {
     #[arg(short = 'l', long, help = "List snapshots for all VMs & CTs")]
     pub list: bool,
 
-    #[arg(short = 'd', long, help = "Delete all snapshots before a given date (YYYY-MM-DD)", value_parser = parse_date)]
-    pub delete_before: Option<NaiveDate>,
+    #[arg(short = 'd', long, help = "List snapshots for all VMs & CTs before a specific date (YYYY-MM-DD)", value_parser = parse_date)]
+    pub date: Option<NaiveDate>,
+
+    #[arg(short = 'r', long, help = "Remove snapshots after before a given date")]
+    pub remove: bool,
+
 }
